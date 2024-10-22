@@ -53,7 +53,7 @@ export default function Home() {
     if (activeDocIndex !== null) {
       const filteredDocs = docs.filter((_, index) => index !== activeDocIndex);
       setDocs(filteredDocs);
-      hideModal(); // Close modal after deletion
+      hideModal(); 
     }
   };
 
@@ -85,7 +85,7 @@ export default function Home() {
         content={content}
         onClose={hideModal}
         onSave={createOrUpdateDoc}
-        onDelete={deleteDoc} // Pass delete handler
+        onDelete={deleteDoc} 
         setTitle={setTitle}
         setContent={setContent}
         isEditMode={activeDocIndex !== null}
