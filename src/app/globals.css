@@ -174,3 +174,10 @@ button {
   width: 100%;
   margin-top: 10px;
 }
+
+.cancel {
+  width: auto;
+  height: auto;
+  color: #545454;
+  margin-right: 10px;
+}
