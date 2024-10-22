@@ -1,6 +1,8 @@
 "use client";
 import Image from "next/image";
-import DocumentCard from "@/components/DocumentCard"
+import Nav from "@/components/Nav";
+import DocumentCard from "@/components/DocumentCard";
+import Modal from "@/components/Modal";
 import React, { useState } from "react";
 
 interface Doc {
@@ -10,50 +12,84 @@ interface Doc {
 
 export default function Home() {
   const [modalActive, setModalActive] = useState(false);
+  const [activeDocIndex, setActiveDocIndex] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [docs, setDocs] = useState<Doc[]>([]);
 
-  const showModal = () => {
+  const showModal = (index: number | null = null) => {
     setModalActive(true);
-    setTitle("")
-    setContent("")
-  }
+    if (index !== null) {
+      setTitle(docs[index].title);
+      setContent(docs[index].content);
+      setActiveDocIndex(index);
+    } else {
+      setTitle("");
+      setContent("");
+      setActiveDocIndex(null);
+    }
+  };
 
-  const createDoc = () => {
+  const hideModal = () => {
     setModalActive(false);
-    setDocs([...docs, {title, content}]);
-  }
+    setTitle("");
+    setContent("");
+    setActiveDocIndex(null);
+  };
+
+  const createOrUpdateDoc = () => {
+    if (activeDocIndex !== null) {
+      const updatedDocs = docs.map((doc, index) =>
+        index === activeDocIndex ? { title, content } : doc
+      );
+      setDocs(updatedDocs);
+    } else {
+      setDocs([...docs, { title, content }]);
+    }
+    hideModal();
+  };
+
+  const deleteDoc = () => {
+    if (activeDocIndex !== null) {
+      const filteredDocs = docs.filter((_, index) => index !== activeDocIndex);
+      setDocs(filteredDocs);
+      hideModal(); // Close modal after deletion
+    }
+  };
 
   return (
     <div className="main">
-      <div className="nav">
-        <div className="logo">
-          <Image src="/logo.svg" alt="Logo" height={48} width={48}></Image>
-          <h2>Notiom</h2>
-        </div>
-        <button onClick={showModal}>Create</button>
-      </div>
+      <Nav onCreate={() => showModal()} />
       <div className="hero">
         <h1>Create. Explore.</h1>
-        <h2 style={{fontWeight: 500}}>The document editing software you've been waiting for</h2>
+        <h2 style={{ fontWeight: 500 }}>
+          The document editing software you've been waiting for
+        </h2>
       </div>
       <div className="content">
-        <button className="card add-doc" onClick={showModal}>
-          <Image src="/add.svg" alt="Add document" height={120} width={120}></Image>
+        <button className="card add-doc" onClick={() => showModal()}>
+          <Image src="/add.svg" alt="Add document" height={120} width={120} />
         </button>
         {docs.map((doc, i) => (
-          <DocumentCard title={doc.title} content={doc.content} onClick={() => setDocs(docs.filter((_, j) => j !== i))} />
+          <DocumentCard
+            key={i}
+            title={doc.title}
+            content={doc.content}
+            onClick={() => showModal(i)}
+          />
         ))}
       </div>
-      <div className={modalActive ? "modal-container active" : "modal-container"}>
-        <div className="modal">
-          <h2>Create document</h2>
-          <input type="text" placeholder="Title..." onChange={(e) => setTitle(e.target.value)} value={title}></input>
-          <textarea placeholder="Content..." onChange={(e) => setContent(e.target.value)} value={content}></textarea>
-          <button onClick={createDoc}>Create</button>
-        </div>
-      </div>
+      <Modal
+        isActive={modalActive}
+        title={title}
+        content={content}
+        onClose={hideModal}
+        onSave={createOrUpdateDoc}
+        onDelete={deleteDoc} // Pass delete handler
+        setTitle={setTitle}
+        setContent={setContent}
+        isEditMode={activeDocIndex !== null}
+      />
     </div>
   );
 }
